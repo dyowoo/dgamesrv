@@ -1,0 +1,22 @@
+syntax = "proto3";
+// 定义包名
+package protoMsg;
+//import "login.proto";
+
+service LoginService {
+  rpc PlayerDBLogin(L2D_Login) returns(D2L_UserInfo){}
+}
+
+message L2D_Login {
+  string account = 1;
+  string password = 2;
+}
+
+message D2L_UserInfo {
+  int64 gameID = 1;
+  string nickName = 2;
+  int64 score=3;
+  string password=4;
+  string account=5;
+  int32 lv=6;
+}

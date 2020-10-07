@@ -1,0 +1,38 @@
+syntax = "proto3";
+package protoMsg;
+
+// 消息命令
+enum CMD_LOGIN {
+  UNKNOWN_LOGIN                   = 0;      // 未知命令
+  Req_AccountLogin                = 1;      // 账号登录
+  Req_OtherPlatformLogin          = 2;      // 游客和三方登录
+  Resp_AccountLogin               = 3;      // 登录返回
+  Resp_AccountLoginRepeat         = 4;      // 账号重复登录
+  Resp_OperateTip                 = 100000; // 操作错误提示
+}
+
+// 操作提示
+message S2C_OperateTip {
+  int32   errCode                 = 1;
+  string  msg                     = 2;
+}
+
+// 帐号登录
+message C2S_Login {
+  string  account                 = 1;
+  string  password                = 2;
+}
+
+// 游客登录和第三方登录
+message C2S_OtherLogin {
+  string  unionID                 = 1;
+  string  openID                  = 2;
+  int32   platformID              = 3;
+  string  password                = 4;
+}
+
+// 登录返回消息
+message S2C_Login {
+  int32   errCode                 = 1;
+  string  msg                     = 2;
+}

@@ -1,2 +1,2 @@
 # dgamesrv
-golang for game server and mysql for db
+golang for game server engine,mysql for db
