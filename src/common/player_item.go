@@ -12,9 +12,9 @@ import (
 	"math"
 )
 
-func (self Position) Distance(target Position) int32 {
-	dx := math.Abs(float64(self.X) - float64(target.X))
-	dy := math.Abs(float64(self.Y) - float64(target.Y))
+func (p Position) Distance(target Position) int32 {
+	dx := math.Abs(float64(p.X) - float64(target.X))
+	dy := math.Abs(float64(p.Y) - float64(target.Y))
 	return int32(math.Sqrt(math.Pow(dx, 2) + math.Pow(dy, 2)))
 }
 

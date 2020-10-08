@@ -30,32 +30,30 @@ type MessageProc struct {
 /**
 注册消息回调
 */
-func (self MessageProc) RegisterCallback(msgType uint32, cb msgCb, messageName string) {
-	_, ok := self.funcMap[msgType]
+func (p MessageProc) RegisterCallback(msgType uint32, cb msgCb, messageName string) {
+	_, ok := p.funcMap[msgType]
 	if ok {
 		fmt.Printf("msgType:%d, msgName:%s 已存在\n", msgType, messageName)
 		return
 	}
-	self.funcMap[msgType] = cb
-	self.funcNameMap[msgType] = messageName
+	p.funcMap[msgType] = cb
+	p.funcNameMap[msgType] = messageName
 }
 
-/**0
+/**
 消息回调处理
 */
-func (self MessageProc) RunCallback(ses *dcore.WsSession, msgType uint32, msg []byte) {
-	_, ok := self.funcMap[msgType]
+func (p MessageProc) RunCallback(ses *dcore.WsSession, msgType uint32, msgByte []byte) {
+	_, ok := p.funcMap[msgType]
 	if !ok {
 		fmt.Printf("msgType:%d 不存在\n", msgType)
 		return
 	}
-	msgRef := proto.MessageType(self.funcNameMap[msgType])
-	a := msgRef.Elem()
-	elem := reflect.New(a)
-	data := elem.Interface().(proto.Message)
-	_ = proto.Unmarshal(msg, data)
+	msgRef := proto.MessageType(p.funcNameMap[msgType])
+	msg := reflect.New(msgRef.Elem()).Interface().(proto.Message)
+	proto.Unmarshal(msgByte, msg)
 
-	self.funcMap[msgType](ses, data)
+	p.funcMap[msgType](ses, msg)
 }
 
 var cbMap MessageProc

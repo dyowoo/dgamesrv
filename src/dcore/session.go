@@ -2,10 +2,11 @@ package dcore
 
 import (
 	"fmt"
+	"sync"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
-	"sync"
 )
 
 /**
@@ -22,31 +23,31 @@ type WsSession struct {
 /**
 设置会话ID
 */
-func (self *WsSession) SetID(id int64) {
-	self.id = id
+func (s *WsSession) SetID(id int64) {
+	s.id = id
 }
 
 /**
 获取会话ID
 */
-func (self *WsSession) GetID() int64 {
-	return self.id
+func (s *WsSession) GetID() int64 {
+	return s.id
 }
 
 /**
 关闭会话
 */
-func (self *WsSession) Close() {
+func (s *WsSession) Close() {
 	var msg Event
 	msg.EType = EVENT_CLOSE
-	msg.Ses = self
-	self.sendPipe.Add(msg)
+	msg.Ses = s
+	s.sendPipe.Add(msg)
 }
 
 /**
 发送封包
 */
-func (self *WsSession) Send(protocolType uint32, buffer proto.Message) {
+func (s *WsSession) Send(protocolType uint32, buffer proto.Message) {
 	var msg Event
 	data, err := proto.Marshal(buffer)
 	if err != nil {
@@ -55,20 +56,20 @@ func (self *WsSession) Send(protocolType uint32, buffer proto.Message) {
 	}
 	msg.EType = EVENT_SEND
 	msg.EData = EncodeMsg(protocolType, data)
-	self.sendPipe.Add(msg)
+	s.sendPipe.Add(msg)
 }
 
 /**
 发送循环
 */
-func (self *WsSession) sendLoop() {
-	for self.conn != nil {
-		msg := self.sendPipe.Get()
+func (s *WsSession) sendLoop() {
+	for s.conn != nil {
+		msg := s.sendPipe.Get()
 		if msg.EType == EVENT_CLOSE {
 			break
 		}
 
-		err := self.conn.WriteMessage(websocket.BinaryMessage, msg.EData)
+		err := s.conn.WriteMessage(websocket.BinaryMessage, msg.EData)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"WsSession": "SendLoop",
@@ -78,25 +79,25 @@ func (self *WsSession) sendLoop() {
 	}
 
 	// 关闭连接
-	if self.conn != nil {
-		_ = self.conn.Close()
-		self.conn = nil
+	if s.conn != nil {
+		_ = s.conn.Close()
+		s.conn = nil
 	}
 
 	// 通知完成
-	self.exitSync.Done()
+	s.exitSync.Done()
 }
 
 /**
 接收循环
 */
-func (self *WsSession) recvLoop() {
-	for self.conn != nil {
-		_, raw, err := self.conn.ReadMessage()
+func (s *WsSession) recvLoop() {
+	for s.conn != nil {
+		_, raw, err := s.conn.ReadMessage()
 		e := Event{
 			EVENT_RECV,
 			raw,
-			self,
+			s,
 		}
 
 		if err != nil {
@@ -106,45 +107,45 @@ func (self *WsSession) recvLoop() {
 				}).Error(err)
 			}
 
-			//self.Close()
+			//s.Close()
 
 			var msg Event
 			msg.EType = EVENT_CLOSE
-			msg.Ses = self
-			self.pInstance.RecvPostEvent(msg)
+			msg.Ses = s
+			s.pInstance.RecvPostEvent(msg)
 
 			break
 		}
 
-		self.pInstance.RecvPostEvent(e)
+		s.pInstance.RecvPostEvent(e)
 	}
 
-	self.exitSync.Done()
+	s.exitSync.Done()
 }
 
 /**
 启动会话
 */
-func (self *WsSession) Start() {
+func (s *WsSession) Start() {
 	// 将会话添加到会话管理器
-	self.pInstance.sesMgr.Add(self)
+	s.pInstance.sesMgr.Add(s)
 
 	// 需要接收和发送协程同时完成时才算真正完成
-	self.exitSync.Add(2)
+	s.exitSync.Add(2)
 
 	go func() {
 		// 等待2个协程任务结束
-		self.exitSync.Wait()
+		s.exitSync.Wait()
 
 		// 将自己的会话从管理器中移除
-		self.pInstance.sesMgr.Remvoe(self)
+		s.pInstance.sesMgr.Remvoe(s)
 	}()
 
 	// 启动接收goroutine
-	go self.recvLoop()
+	go s.recvLoop()
 
 	// 启动发送goroutine
-	go self.sendLoop()
+	go s.sendLoop()
 }
 
 /**

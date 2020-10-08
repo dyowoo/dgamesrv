@@ -11,41 +11,41 @@ type SessionManager struct {
 	count    int32    //记录当前在使用的会话数量
 }
 
-func (self *SessionManager) SetIDBase(base int64) {
-	atomic.StoreInt64(&self.sesIDGen, base)
+func (m *SessionManager) SetIDBase(base int64) {
+	atomic.StoreInt64(&m.sesIDGen, base)
 }
 
-func (self *SessionManager) Count() int32 {
-	return self.count
+func (m *SessionManager) Count() int32 {
+	return m.count
 }
 
-func (self *SessionManager) Add(ses *WsSession) {
-	id := atomic.AddInt64(&self.sesIDGen, 1)
-	atomic.AddInt32(&self.count, 1)
+func (m *SessionManager) Add(ses *WsSession) {
+	id := atomic.AddInt64(&m.sesIDGen, 1)
+	atomic.AddInt32(&m.count, 1)
 	ses.SetID(id)
-	self.sesMap.Store(id, ses)
+	m.sesMap.Store(id, ses)
 }
 
-func (self *SessionManager) Remvoe(ses *WsSession) {
-	self.sesMap.Delete(ses.GetID())
-	atomic.AddInt32(&self.count, -1)
+func (m *SessionManager) Remvoe(ses *WsSession) {
+	m.sesMap.Delete(ses.GetID())
+	atomic.AddInt32(&m.count, -1)
 }
 
-func (self *SessionManager) GetSession(id int64) *WsSession {
-	if val, ok := self.sesMap.Load(id); ok {
+func (m *SessionManager) GetSession(id int64) *WsSession {
+	if val, ok := m.sesMap.Load(id); ok {
 		return val.(*WsSession)
 	}
 	return nil
 }
 
-func (self *SessionManager) RangeSession(callback func(session *WsSession) bool) {
-	self.sesMap.Range(func(key, value interface{}) bool {
+func (m *SessionManager) RangeSession(callback func(session *WsSession) bool) {
+	m.sesMap.Range(func(key, value interface{}) bool {
 		return callback(value.(*WsSession))
 	})
 }
 
-func (self *SessionManager) CloseAllSession() {
-	self.RangeSession(func(session *WsSession) bool {
+func (m *SessionManager) CloseAllSession() {
+	m.RangeSession(func(session *WsSession) bool {
 		session.Close()
 		return true
 	})
@@ -54,7 +54,7 @@ func (self *SessionManager) CloseAllSession() {
 /**
 获取活跃的会话数量
 */
-func (self *SessionManager) SessionCount() int32 {
-	count := atomic.LoadInt32(&self.count)
+func (m *SessionManager) SessionCount() int32 {
+	count := atomic.LoadInt32(&m.count)
 	return count
 }

@@ -14,29 +14,29 @@ type playerManager struct {
 	arrayPlayer ArrayPlayer
 }
 
-func (self *playerManager) AddItem(player *common.PlayerItem) {
-	self.arrayPlayer[player.GameID] = player
+func (m *playerManager) AddItem(player *common.PlayerItem) {
+	m.arrayPlayer[player.GameID] = player
 }
 
-func (self *playerManager) IsPlayerExist(gameID int64) bool {
-	_, ok := self.arrayPlayer[gameID]
+func (m *playerManager) IsPlayerExist(gameID int64) bool {
+	_, ok := m.arrayPlayer[gameID]
 	return ok
 }
 
-func (self *playerManager) Delete(player *common.PlayerItem) {
-	delete(self.arrayPlayer, player.GameID)
+func (m *playerManager) Delete(player *common.PlayerItem) {
+	delete(m.arrayPlayer, player.GameID)
 }
 
-func (self *playerManager) GetPlayerByID(gameID int64) (player *common.PlayerItem) {
-	v, ok := self.arrayPlayer[gameID]
+func (m *playerManager) GetPlayerByID(gameID int64) (player *common.PlayerItem) {
+	v, ok := m.arrayPlayer[gameID]
 	if !ok {
 		return nil
 	}
 	return v
 }
 
-func (self *playerManager) GetPlayerBySesID(sesID int64) (player *common.PlayerItem) {
-	for _, value := range self.arrayPlayer {
+func (m *playerManager) GetPlayerBySesID(sesID int64) (player *common.PlayerItem) {
+	for _, value := range m.arrayPlayer {
 		if value.Ses.GetID() == sesID {
 			return value
 		}

@@ -5,21 +5,21 @@ type pipe struct {
 	cb      PipeCb
 }
 
-func (self *pipe) Add(e Event) {
-	self.ch_send <- e
+func (p *pipe) Add(e Event) {
+	p.ch_send <- e
 }
 
-func (self *pipe) Get() Event {
-	return <-self.ch_send
+func (p *pipe) Get() Event {
+	return <-p.ch_send
 }
 
-func (self *pipe) Start() {
+func (p *pipe) Start() {
 	go func() {
 		for {
 			var data Event
 			select {
-			case data = <-self.ch_send:
-				self.cb(data)
+			case data = <-p.ch_send:
+				p.cb(data)
 			}
 		}
 	}()
