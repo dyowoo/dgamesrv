@@ -1,16 +1,19 @@
 package dcore
 
+/**
+管道结构
+*/
 type pipe struct {
-	ch_send chan Event
-	cb      PipeCb
+	chSend chan Event
+	cb     PipeCb
 }
 
 func (p *pipe) Add(e Event) {
-	p.ch_send <- e
+	p.chSend <- e
 }
 
 func (p *pipe) Get() Event {
-	return <-p.ch_send
+	return <-p.chSend
 }
 
 func (p *pipe) Start() {
@@ -18,7 +21,7 @@ func (p *pipe) Start() {
 		for {
 			var data Event
 			select {
-			case data = <-p.ch_send:
+			case data = <-p.chSend:
 				p.cb(data)
 			}
 		}

@@ -138,7 +138,7 @@ func (s *WsSession) Start() {
 		s.exitSync.Wait()
 
 		// 将自己的会话从管理器中移除
-		s.pInstance.sesMgr.Remvoe(s)
+		s.pInstance.sesMgr.Remove(s)
 	}()
 
 	// 启动接收goroutine
@@ -153,7 +153,7 @@ func (s *WsSession) Start() {
 */
 func NewSession(conn *websocket.Conn, p *NetComponent) *WsSession {
 	var sendPipe pipe
-	sendPipe.ch_send = make(chan Event, 100)
+	sendPipe.chSend = make(chan Event, 100)
 
 	session := &WsSession{
 		conn:      conn,

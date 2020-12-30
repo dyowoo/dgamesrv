@@ -7,12 +7,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+/**
+网络组件
+*/
 type NetComponent struct {
 	Constr   string //连接字符串
 	corePipe *pipe
 	sesMgr   SessionManager
 }
 
+// http升级到websocket
 var upGrader = websocket.Upgrader{
 	// 解决跨域问题
 	CheckOrigin: func(r *http.Request) bool {
@@ -20,10 +24,13 @@ var upGrader = websocket.Upgrader{
 	},
 }
 
+/**
+启动websocket
+*/
 func (c *NetComponent) Start(cb PipeCb) error {
 	c.corePipe = &pipe{
-		ch_send: make(chan Event, 100),
-		cb:      cb,
+		chSend: make(chan Event, 100),
+		cb:     cb,
 	}
 	c.corePipe.Start()
 

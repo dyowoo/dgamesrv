@@ -22,6 +22,7 @@ type SqlCon struct {
 }
 
 func (c *SqlCon) Connect(constr string) *xorm.Engine {
+	// 创建数据库引擎
 	engine, err := xorm.NewEngine("mysql", constr)
 	c.DbEngine = engine
 	if err != nil {
@@ -31,6 +32,7 @@ func (c *SqlCon) Connect(constr string) *xorm.Engine {
 		return nil
 	}
 
+	// 配置数据库参数
 	engine.SetConnMaxLifetime(time.Second * 500)
 	engine.SetMaxOpenConns(100)
 	engine.SetMapper(names.SameMapper{})

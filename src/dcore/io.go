@@ -12,6 +12,9 @@ import (
 	"net"
 )
 
+/**
+判断是否末尾
+*/
 func IsEOFOrNetReadError(err error) bool {
 	if err == io.EOF {
 		return true

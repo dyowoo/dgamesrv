@@ -49,9 +49,10 @@ func (p MessageProc) RunCallback(ses *dcore.WsSession, msgType uint32, msgByte [
 		fmt.Printf("msgType:%d 不存在\n", msgType)
 		return
 	}
+
 	msgRef := proto.MessageType(p.funcNameMap[msgType])
 	msg := reflect.New(msgRef.Elem()).Interface().(proto.Message)
-	proto.Unmarshal(msgByte, msg)
+	_ = proto.Unmarshal(msgByte, msg)
 
 	p.funcMap[msgType](ses, msg)
 }
